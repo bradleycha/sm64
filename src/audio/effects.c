@@ -84,8 +84,8 @@ static void sequence_channel_process_sound(struct SequenceChannel *seqChannel) {
 void sequence_player_process_sound(struct SequencePlayer *seqPlayer) {
     s32 i;
 
-    if (seqPlayer->fadeRemainingFrames != 0) {
-        seqPlayer->fadeVolume += seqPlayer->fadeVelocity;
+    if (seqPlayer->fadeRemainingFrames > 0.0f) {
+        seqPlayer->fadeVolume += seqPlayer->fadeVelocity * gAudioPlaybackSpeed;
 #if defined(VERSION_EU) || defined(VERSION_SH) || defined(VERSION_CN)
         seqPlayer->recalculateVolume = TRUE;
 #endif
@@ -97,7 +97,9 @@ void sequence_player_process_sound(struct SequencePlayer *seqPlayer) {
             seqPlayer->fadeVolume = 0;
         }
 
-        if (--seqPlayer->fadeRemainingFrames == 0) {
+        seqPlayer->fadeRemainingFrames -= gAudioPlaybackSpeed;
+
+        if (seqPlayer->fadeRemainingFrames <= 0) {
 #if defined(VERSION_EU) || defined(VERSION_SH) || defined(VERSION_CN)
             if (seqPlayer->state == 2) {
                 sequence_player_disable(seqPlayer);
@@ -153,7 +155,7 @@ f32 get_portamento_freq_scale(struct Portamento *p) {
     }
 #endif
 
-    p->cur += p->speed;
+    p->cur += p->speed * gAudioPlaybackSpeed;
     v0 = (u32) p->cur;
 
 #if defined(VERSION_EU) || defined(VERSION_SH) || defined(VERSION_CN)
@@ -176,16 +178,16 @@ f32 get_portamento_freq_scale(struct Portamento *p) {
 #if defined(VERSION_EU) || defined(VERSION_SH) || defined(VERSION_CN)
 s16 get_vibrato_pitch_change(struct VibratoState *vib) {
     s32 index;
-    vib->time += (s32) vib->rate;
-    index = (vib->time >> 10) & 0x3F;
+    vib->time += vib->rate * gAudioPlaybackSpeed;
+    index = ((u32)vib->time >> 10) & 0x3F;
     return vib->curve[index] >> 8;
 }
 #else
 s8 get_vibrato_pitch_change(struct VibratoState *vib) {
     s32 index;
-    vib->time += vib->rate;
+    vib->time += vib->rate * gAudioPlaybackSpeed;
 
-    index = (vib->time >> 10) & 0x3F;
+    index = ((u32)vib->time >> 10) & 0x3F;
 
     switch (index & 0x30) {
         case 0x10:
@@ -301,7 +303,7 @@ void note_vibrato_init(struct Note *note) {
 #endif
 
     vib->active = TRUE;
-    vib->time = 0;
+    vib->time = 0.0f;
 
 #if defined(VERSION_EU) || defined(VERSION_SH) || defined(VERSION_CN)
     vib->curve = gWaveSamples[2];

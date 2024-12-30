@@ -119,7 +119,7 @@ struct NotePool {
 
 struct VibratoState {
     /*0x00, 0x00*/ struct SequenceChannel *seqChannel;
-    /*0x04, 0x04*/ u32 time;
+    /*0x04, 0x04*/ f32 time;
 #if defined(VERSION_EU) || defined(VERSION_SH) || defined(VERSION_CN)
     /*    , 0x08*/ s16 *curve;
     /*    , 0x0C*/ f32 extent;
@@ -271,9 +271,9 @@ struct SequencePlayer {
     /*     , 0x007, 0x007*/ s8 seqVariationEu[1];
 #endif
     /*0x00A, 0x008*/ u16 tempo; // beats per minute in JP, tatums per minute in US/EU
-    /*0x00C, 0x00A*/ u16 tempoAcc;
+    /*0x00C, 0x00A*/ f32 tempoAcc;
 #if defined(VERSION_JP) || defined(VERSION_US)
-    /*0x00E, 0x010*/ u16 fadeRemainingFrames;
+    /*0x00E, 0x010*/ f32 fadeRemainingFrames;
 #endif
 #if defined(VERSION_SH) || defined(VERSION_CN)
     /*              0x00C*/ s16 tempoAdd;
@@ -281,7 +281,7 @@ struct SequencePlayer {
     /*0x010, 0x00C, 0x00E*/ s16 transposition;
     /*0x012, 0x00E, 0x010*/ u16 delay;
 #if defined(VERSION_EU) || defined(VERSION_SH) || defined(VERSION_CN)
-    /*0x00E, 0x010, 0x012*/ u16 fadeRemainingFrames;
+    /*0x00E, 0x010, 0x012*/ f32 fadeRemainingFrames;
     /*     , 0x012, 0x014*/ u16 fadeTimerUnkEu;
 #endif
     /*0x014, 0x014*/ u8 *seqData; // buffer of some sort
@@ -851,5 +851,7 @@ struct UnkStruct80343D00 {
 extern s32 D_SH_80343CF0;
 extern struct UnkStruct80343D00 D_SH_80343D00;
 #endif
+
+extern f32 gAudioPlaybackSpeed;
 
 #endif // AUDIO_INTERNAL_H

@@ -1206,7 +1206,7 @@ void audio_reset_session(void) {
 
     gMaxSimultaneousNotes = preset->maxSimultaneousNotes;
     gVolume = preset->volume;
-    gTempoInternalToExternal = (u32) (gAudioBufferParameters.updatesPerFrame * 2880000.0f / gTatumsPerBeat / D_EU_802298D0);
+    gTempoInternalToExternal = (f32) (gAudioBufferParameters.updatesPerFrame * 2880000.0f / gTatumsPerBeat / D_EU_802298D0);
 
     gAudioBufferParameters.presetUnk4 = preset->unk1;
     gAudioBufferParameters.samplesPerFrameTarget *= gAudioBufferParameters.presetUnk4;
@@ -1259,9 +1259,9 @@ void audio_reset_session(void) {
     // external beats/minute (JP) or tatums/minute (US). In practice this is
     // 300 on JP and 14360 on US.
 #ifdef VERSION_JP
-    gTempoInternalToExternal = updatesPerFrame * 3600 / gTatumsPerBeat;
+    gTempoInternalToExternal = (f32)(updatesPerFrame * 3600 / gTatumsPerBeat);
 #else
-    gTempoInternalToExternal = (u32)(updatesPerFrame * 2880000.0f / gTatumsPerBeat / 16.713f);
+    gTempoInternalToExternal = updatesPerFrame * 2880000.0f / gTatumsPerBeat / 16.713f;
 #endif
     gMaxAudioCmds = gMaxSimultaneousNotes * 20 * updatesPerFrame + 320;
 #endif

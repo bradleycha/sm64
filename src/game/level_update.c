@@ -176,6 +176,61 @@ u8 unused1[2] = { 0 };
 s8 sWarpCheckpointActive = FALSE;
 u8 unused2[4];
 
+// UQ5.11, leaves enough precision so that 2 * 9.99 is within range while also
+// providing decent decimal precision.
+u16 sGameSpeed = GAME_SPEED_DEFAULT;
+u16 sFrameAccumulator = 0;
+u8 sFrameCount = 1;
+
+void game_speed_update(void) {
+   sFrameAccumulator += sGameSpeed;
+   sFrameCount = (u8)((sFrameAccumulator & GAME_SPEED_MASK_WHOLE) / GAME_SPEED_CVT_DIV);
+   sFrameAccumulator &= GAME_SPEED_MASK_FRAC;
+   return;
+}
+
+void game_speed_increment(void) {
+    if (sGameSpeed >= GAME_SPEED_MAX) {
+        return;
+    }
+
+    sGameSpeed += GAME_SPEED_INCREMENT;
+}
+
+void game_speed_decrement(void) {
+    if (sGameSpeed <= GAME_SPEED_MIN) {
+        return;
+    }
+
+    sGameSpeed -= GAME_SPEED_INCREMENT;
+}
+
+void game_speed_reset(void) {
+    sGameSpeed = GAME_SPEED_DEFAULT;
+}
+
+u8 game_speed_is_altered(void) {
+   return sGameSpeed != GAME_SPEED_DEFAULT;
+}
+
+u16 game_speed_get_fixed_point(void) {
+    return sGameSpeed;
+}
+
+f32 game_speed_get_floating_point(void) {
+    f32 major;
+    f32 minor;
+
+    major = (f32)(sGameSpeed / GAME_SPEED_MASK_FRAC);
+    minor = (f32)(sGameSpeed % GAME_SPEED_MASK_FRAC);
+
+    return major + (minor / GAME_SPEED_CVT_DIV);
+}
+
+u8 game_speed_frame_count(void) {
+   return sFrameCount;
+}
+
 u16 level_control_timer(s32 timerOp) {
     switch (timerOp) {
         case TIMER_CONTROL_SHOW:
@@ -940,6 +995,18 @@ void update_hud_values(void) {
             gHudDisplay.flags |= HUD_DISPLAY_FLAG_EMPHASIZE_POWER;
         } else {
             gHudDisplay.flags &= ~HUD_DISPLAY_FLAG_EMPHASIZE_POWER;
+        }
+    }
+
+    if (gMarioState->controller->buttonDown & L_TRIG) {
+        if (gMarioState->controller->buttonPressed & L_JPAD) {
+            game_speed_decrement();
+        }
+        if (gMarioState->controller->buttonPressed & R_JPAD) {
+            game_speed_increment();
+        }
+        if (gMarioState->controller->buttonPressed & U_JPAD) {
+            game_speed_reset();
         }
     }
 }

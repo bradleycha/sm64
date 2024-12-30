@@ -71,6 +71,8 @@ s32 gAudioErrorFlags = 0;
 #endif
 s32 sGameLoopTicked = 0;
 
+f32 gAudioPlaybackSpeed = 1.0f;
+
 // Dialog sounds
 // The US difference is the sound for DIALOG_037 ("I win! You lose! Ha ha ha ha!
 // You're no slouch, but I'm a better sledder! Better luck next time!"), spoken
@@ -497,7 +499,7 @@ void unused_8031E4F0(void) {
     stubbed_printf("DMACACHE  %4d Blocks\n", 0);
     stubbed_printf("CHANNELS  %2d / MAX %3d \n", 0, 0);
 
-    stubbed_printf("TEMPOMAX  %d\n", gTempoInternalToExternal / TEMPO_SCALE);
+    stubbed_printf("TEMPOMAX  %d\n", (s16)(gTempoInternalToExternal / TEMPO_SCALE));
     stubbed_printf("TEMPO G0  %d\n", gSequencePlayers[SEQ_PLAYER_LEVEL].tempo / TEMPO_SCALE);
     stubbed_printf("TEMPO G1  %d\n", gSequencePlayers[SEQ_PLAYER_ENV].tempo / TEMPO_SCALE);
     stubbed_printf("TEMPO G2  %d\n", gSequencePlayers[SEQ_PLAYER_SFX].tempo / TEMPO_SCALE);
@@ -556,7 +558,7 @@ static void seq_player_fade_to_zero_volume(s32 player, FadeT fadeDuration) {
 
     seqPlayer->fadeVelocity = -(seqPlayer->fadeVolume / fadeDuration);
     seqPlayer->state = SEQUENCE_PLAYER_STATE_FADE_OUT;
-    seqPlayer->fadeRemainingFrames = fadeDuration;
+    seqPlayer->fadeRemainingFrames = (f32)fadeDuration;
 }
 
 /**
@@ -570,7 +572,7 @@ static void func_8031D690(s32 player, FadeT fadeInTime) {
     }
 
     seqPlayer->state = SEQUENCE_PLAYER_STATE_2;
-    seqPlayer->fadeRemainingFrames = fadeInTime;
+    seqPlayer->fadeRemainingFrames = (f32)fadeInTime;
     seqPlayer->fadeVolume = 0.0f;
     seqPlayer->fadeVelocity = 0.0f;
 }
@@ -596,7 +598,7 @@ static void seq_player_fade_to_percentage_of_volume(s32 player, FadeT fadeDurati
     targetVolume = (FLOAT_CAST(percentage) / EU_FLOAT(100.0)) * seqPlayer->fadeVolume;
     seqPlayer->volume = seqPlayer->fadeVolume;
 
-    seqPlayer->fadeRemainingFrames = 0;
+    seqPlayer->fadeRemainingFrames = 0.0f;
     if (fadeDuration == 0) {
         seqPlayer->fadeVolume = targetVolume;
         return;
@@ -608,7 +610,7 @@ static void seq_player_fade_to_percentage_of_volume(s32 player, FadeT fadeDurati
     seqPlayer->state = SEQUENCE_PLAYER_STATE_4;
 #endif
 
-    seqPlayer->fadeRemainingFrames = fadeDuration;
+    seqPlayer->fadeRemainingFrames = (f32)fadeDuration;
 }
 
 /**
@@ -627,7 +629,7 @@ static void seq_player_fade_to_normal_volume(s32 player, FadeT fadeDuration) {
     }
 #endif
 
-    seqPlayer->fadeRemainingFrames = 0;
+    seqPlayer->fadeRemainingFrames = 0.0f;
     if (fadeDuration == 0) {
         seqPlayer->fadeVolume = seqPlayer->volume;
         return;
@@ -639,7 +641,7 @@ static void seq_player_fade_to_normal_volume(s32 player, FadeT fadeDuration) {
     seqPlayer->state = SEQUENCE_PLAYER_STATE_2;
 #endif
 
-    seqPlayer->fadeRemainingFrames = fadeDuration;
+    seqPlayer->fadeRemainingFrames = (f32)fadeDuration;
 }
 
 /**
@@ -654,7 +656,7 @@ static void seq_player_fade_to_target_volume(s32 player, FadeT fadeDuration, u8 
     }
 #endif
 
-    seqPlayer->fadeRemainingFrames = 0;
+    seqPlayer->fadeRemainingFrames = 0.0f;
     if (fadeDuration == 0) {
         seqPlayer->fadeVolume = (FLOAT_CAST(targetVolume) / EU_FLOAT(127.0));
         return;
@@ -669,7 +671,7 @@ static void seq_player_fade_to_target_volume(s32 player, FadeT fadeDuration, u8 
     seqPlayer->state = SEQUENCE_PLAYER_STATE_4;
 #endif
 
-    seqPlayer->fadeRemainingFrames = fadeDuration;
+    seqPlayer->fadeRemainingFrames = (f32)fadeDuration;
 }
 
 #if defined(VERSION_EU) || defined(VERSION_SH) || defined(VERSION_CN)
@@ -1355,6 +1357,8 @@ static void update_game_sound(void) {
     if (gSequencePlayers[SEQ_PLAYER_SFX].channels[0] == &gSequenceChannelNone) {
         return;
     }
+
+    gAudioPlaybackSpeed = game_speed_get_floating_point();
 
     for (bank = 0; bank < SOUND_BANK_COUNT; bank++) {
         select_current_sounds(bank);

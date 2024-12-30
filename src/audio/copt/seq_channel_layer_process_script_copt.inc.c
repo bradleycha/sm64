@@ -385,7 +385,7 @@ l1138:
                     layer->adsr.releaseRate = drum->releaseRate;
                     layer->pan = FLOAT_CAST(drum->pan) / US_FLOAT(128.0);
                     layer->sound = &drum->sound;
-                    layer->freqScale = layer->sound->tuning;
+                    layer->freqScale = layer->sound->tuning * gAudioPlaybackSpeed;
                 }
 
             skip:;
@@ -415,10 +415,10 @@ l1138:
 
                             sameSound = (sound == (*layer).sound);
                             layer->sound = sound;
-                            tuning = (*sound).tuning;
+                            tuning = (*sound).tuning * gAudioPlaybackSpeed;
                         } else {
                             layer->sound = NULL;
-                            tuning = 1.0f;
+                            tuning = gAudioPlaybackSpeed;
                         }
 
                         temp_f2 = gNoteFrequencies[cmdSemitone] * tuning;
@@ -460,7 +460,7 @@ l13cc:
 
                         sameSound = (sound == (*layer).sound);
                         layer->sound = sound;
-                        layer->freqScale = gNoteFrequencies[cmdSemitone] * (*sound).tuning;
+                        layer->freqScale = gNoteFrequencies[cmdSemitone] * (*sound).tuning * gAudioPlaybackSpeed;
                     } else {
                         layer->sound = NULL;
                         layer->freqScale = gNoteFrequencies[cmdSemitone];

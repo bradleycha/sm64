@@ -231,7 +231,7 @@ void seq_player_fade_to_zero_volume(s32 arg0, s32 fadeOutTime) {
     }
     player = &gSequencePlayers[arg0];
     player->state = 2;
-    player->fadeRemainingFrames = fadeOutTime;
+    player->fadeRemainingFrames = (f32)fadeOutTime;
     player->fadeVelocity = -(player->fadeVolume / (f32) fadeOutTime);
 }
 
@@ -242,7 +242,7 @@ void func_8031D690(s32 playerIndex, s32 fadeInTime) {
         player = &gSequencePlayers[playerIndex];
         player->state = 1;
         player->fadeTimerUnkEu = fadeInTime;
-        player->fadeRemainingFrames = fadeInTime;
+        player->fadeRemainingFrames = (f32)fadeInTime;
         player->fadeVolume = 0.0f;
         player->fadeVelocity = 0.0f;
     }

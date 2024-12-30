@@ -19,6 +19,7 @@
 #include "segment2.h"
 #include "segment_symbols.h"
 #include "rumble_init.h"
+#include "game/level_update.h"
 
 // First 3 controller slots
 struct Controller gControllers[3];
@@ -637,11 +638,17 @@ void setup_game_memory(void) {
     load_segment_decompress(2, _segment2_mio0SegmentRomStart, _segment2_mio0SegmentRomEnd);
 }
 
+void delay_frame(void) {
+    osRecvMesg(&gGameVblankQueue, &gMainReceivedMesg, OS_MESG_BLOCK);
+    osRecvMesg(&gGameVblankQueue, &gMainReceivedMesg, OS_MESG_BLOCK);
+}
+
 /**
  * Main game loop thread. Runs forever as long as the game continues.
  */
 void thread5_game_loop(UNUSED void *arg) {
     struct LevelCommand *addr;
+    u8 frame_count;
 
     CN_DEBUG_PRINTF(("start gfx thread\n"));
 
@@ -670,6 +677,15 @@ void thread5_game_loop(UNUSED void *arg) {
     render_init();
 
     while (TRUE) {
+        game_speed_update();
+
+        frame_count = game_speed_frame_count();
+
+        if (frame_count == 0) {
+            delay_frame();
+            continue;
+        }
+
         // If the reset timer is active, run the process to reset the game.
         if (gResetTimer != 0) {
             draw_reset_bars();
@@ -677,19 +693,24 @@ void thread5_game_loop(UNUSED void *arg) {
         }
         profiler_log_thread5_time(THREAD5_START);
 
-        // If any controllers are plugged in, start read the data for when
-        // read_controller_inputs is called later.
-        if (gControllerBits) {
-#if ENABLE_RUMBLE
-            block_until_rumble_pak_free();
-#endif
-            osContStartReadData(&gSIEventMesgQueue);
-        }
-
+        // TODO: repeat multiple level updates in a single frame if frame_count > 1
         audio_game_loop_tick();
         select_gfx_pool();
-        read_controller_inputs();
-        addr = level_script_execute(addr);
+
+        while (frame_count != 0) {
+            // If any controllers are plugged in, start read the data for when
+            // read_controller_inputs is called later.
+            if (gControllerBits) {
+#if ENABLE_RUMBLE
+                block_until_rumble_pak_free();
+#endif
+                osContStartReadData(&gSIEventMesgQueue);
+            }
+
+            read_controller_inputs();
+            addr = level_script_execute(addr);
+            frame_count--;
+        }
 
         display_and_vsync();
 

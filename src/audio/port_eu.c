@@ -191,7 +191,7 @@ void seq_player_fade_to_zero_volume(s32 player, FadeT fadeOutTime) {
     }
     gSequencePlayers[player].fadeVelocity = -(gSequencePlayers[player].fadeVolume / fadeOutTime);
     gSequencePlayers[player].state = 2;
-    gSequencePlayers[player].fadeRemainingFrames = fadeOutTime;
+    gSequencePlayers[player].fadeRemainingFrames = (f32)fadeOutTime;
 
 }
 
@@ -199,7 +199,7 @@ void func_8031D690(s32 player, FadeT fadeInTime) {
     if (fadeInTime != 0) {
         gSequencePlayers[player].state = 1;
         gSequencePlayers[player].fadeTimerUnkEu = fadeInTime;
-        gSequencePlayers[player].fadeRemainingFrames = fadeInTime;
+        gSequencePlayers[player].fadeRemainingFrames = (f32)fadeInTime;
         gSequencePlayers[player].fadeVolume = 0.0f;
         gSequencePlayers[player].fadeVelocity = 0.0f;
     }

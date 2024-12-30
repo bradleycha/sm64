@@ -49,7 +49,7 @@ extern s32 gMaxAudioCmds;
 extern s32 gMaxSimultaneousNotes;
 extern s32 gSamplesPerFrameTarget;
 extern s32 gMinAiBufferLength;
-extern s16 gTempoInternalToExternal;
+extern f32 gTempoInternalToExternal;
 extern s8 gAudioUpdatesPerFrame; // = 4
 extern s8 gSoundMode;
 

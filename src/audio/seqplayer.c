@@ -895,7 +895,7 @@ void seq_channel_layer_process_script(struct SequenceChannelLayer *layer) {
 
                         if (PORTAMENTO_IS_SPECIAL(layer->portamento)) {
                             portamento->speed = US_FLOAT(32512.0) * FLOAT_CAST(seqPlayer->tempo)
-                                                / ((f32) layer->delay * (f32) gTempoInternalToExternal
+                                                / ((f32) layer->delay * gTempoInternalToExternal
                                                    * FLOAT_CAST(layer->portamentoTime));
                         } else {
                             portamento->speed = US_FLOAT(127.0) / FLOAT_CAST(layer->portamentoTime);
@@ -1266,10 +1266,10 @@ s32 seq_channel_layer_process_script_part4(struct SequenceChannelLayer *layer, s
                     sound = instrument_get_audio_bank_sound(instrument, vel);
                     sameSound = (sound == layer->sound);
                     layer->sound = sound;
-                    tuning = sound->tuning;
+                    tuning = sound->tuning * gAudioPlaybackSpeed;
                 } else {
                     layer->sound = NULL;
-                    tuning = 1.0f;
+                    tuning = gAudioPlaybackSpeed;
                 }
 
                 temp_f2 = gNoteFrequencies[cmd] * tuning;
@@ -1300,7 +1300,7 @@ s32 seq_channel_layer_process_script_part4(struct SequenceChannelLayer *layer, s
 
                 if (PORTAMENTO_IS_SPECIAL(layer->portamento)) {
                     portamento->speed = US_FLOAT(32512.0) * FLOAT_CAST(seqPlayer->tempo)
-                                        / ((f32) layer->delay * (f32) gTempoInternalToExternal
+                                        / ((f32) layer->delay * gTempoInternalToExternal
                                             * FLOAT_CAST(layer->portamentoTime));
                 } else {
                     portamento->speed = US_FLOAT(127.0) / FLOAT_CAST(layer->portamentoTime);
@@ -2341,14 +2341,14 @@ void sequence_player_process_sequence(struct SequencePlayer *seqPlayer) {
     }
 
     // Check if we surpass the number of ticks needed for a tatum, else stop.
-    seqPlayer->tempoAcc += seqPlayer->tempo;
+    seqPlayer->tempoAcc += (f32)seqPlayer->tempo * gAudioPlaybackSpeed;
 #if defined(VERSION_SH) || defined(VERSION_CN)
-    seqPlayer->tempoAcc += seqPlayer->tempoAdd;
+    seqPlayer->tempoAcc += (f32)seqPlayer->tempoAdd * gAudioPlaybackSpeed;
 #endif
     if (seqPlayer->tempoAcc < gTempoInternalToExternal) {
         return;
     }
-    seqPlayer->tempoAcc -= (u16) gTempoInternalToExternal;
+    seqPlayer->tempoAcc -= gTempoInternalToExternal;
 
     state = &seqPlayer->scriptState;
     if (seqPlayer->delay > 1) {
@@ -2526,7 +2526,7 @@ void sequence_player_process_sequence(struct SequencePlayer *seqPlayer) {
                                 }
                                 break;
                             case SEQUENCE_PLAYER_STATE_2:
-                                seqPlayer->fadeRemainingFrames = u16v;
+                                seqPlayer->fadeRemainingFrames = (f32)u16v;
                                 seqPlayer->state = cmd;
                                 seqPlayer->fadeVelocity =
                                     (0.0f - seqPlayer->fadeVolume) / (s32)(u16v & 0xFFFFu);
@@ -2544,7 +2544,7 @@ void sequence_player_process_sequence(struct SequencePlayer *seqPlayer) {
                                 seqPlayer->fadeVolume = 0.0f;
                                 // fallthrough
                             case SEQUENCE_PLAYER_STATE_0:
-                                seqPlayer->fadeRemainingFrames = seqPlayer->fadeTimerUnkEu;
+                                seqPlayer->fadeRemainingFrames = (f32)seqPlayer->fadeTimerUnkEu;
                                 if (seqPlayer->fadeTimerUnkEu != 0) {
                                     seqPlayer->fadeVelocity = (temp32 / 127.0f - seqPlayer->fadeVolume) / FLOAT_CAST(seqPlayer->fadeRemainingFrames);
                                 } else {
@@ -2557,7 +2557,7 @@ void sequence_player_process_sequence(struct SequencePlayer *seqPlayer) {
                         cmd = m64_read_u8(state);
                         switch (seqPlayer->state) {
                             case SEQUENCE_PLAYER_STATE_2:
-                                if (seqPlayer->fadeRemainingFrames != 0) {
+                                if (seqPlayer->fadeRemainingFrames > 0.0f) {
                                     f32 targetVolume = FLOAT_CAST(cmd) / US_FLOAT(127.0);
                                     seqPlayer->fadeVelocity = (targetVolume - seqPlayer->fadeVolume)
                                                               / FLOAT_CAST(seqPlayer->fadeRemainingFrames);
@@ -2770,11 +2770,11 @@ void init_sequence_player(u32 player) {
 #else
     seqPlayer->state = SEQUENCE_PLAYER_STATE_0;
 #endif
-    seqPlayer->fadeRemainingFrames = 0;
+    seqPlayer->fadeRemainingFrames = 0.0f;
 #if defined(VERSION_EU) || defined(VERSION_SH) || defined(VERSION_CN)
     seqPlayer->fadeTimerUnkEu = 0;
 #endif
-    seqPlayer->tempoAcc = 0;
+    seqPlayer->tempoAcc = 0.0f;
     seqPlayer->tempo = 120 * TEMPO_SCALE; // 120 BPM
 #if defined(VERSION_SH) || defined(VERSION_CN)
     seqPlayer->tempoAdd = 0;

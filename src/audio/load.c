@@ -80,12 +80,12 @@ s32 gMaxAudioCmds;
 s32 gMaxSimultaneousNotes;
 
 #if defined(VERSION_EU)
-s16 gTempoInternalToExternal;
+f32 gTempoInternalToExternal;
 #else
 s32 gSamplesPerFrameTarget;
 s32 gMinAiBufferLength;
 
-s16 gTempoInternalToExternal;
+f32 gTempoInternalToExternal;
 
 s8 gAudioUpdatesPerFrame;
 #endif

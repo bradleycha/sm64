@@ -49,6 +49,14 @@
 #define MARIO_SPAWN_LAUNCH_DEATH          0x25
 #define MARIO_SPAWN_UNKNOWN_27            0x27
 
+#define GAME_SPEED_MASK_FRAC     0x07ff                  /* bitmask for fractional portion */
+#define GAME_SPEED_MASK_WHOLE    (~GAME_SPEED_MASK_FRAC) /* bitmask for whole portion */
+#define GAME_SPEED_CVT_DIV       2048                    /* the number to divide the fractional portion by to convert to decimal */
+#define GAME_SPEED_DEFAULT       0x0800                  /* 1.0 in decimal */
+#define GAME_SPEED_INCREMENT     0x0014                  /* ~0.01 in decimal */
+#define GAME_SPEED_MIN           GAME_SPEED_INCREMENT    /* prevents misaligning due to fixed-point imprecisions */
+#define GAME_SPEED_MAX           0x2fff                  /* 9.99 in decimal */
+
 enum WarpNodes {
     WARP_NODE_00,
     WARP_NODE_01,
@@ -186,6 +194,14 @@ enum HUDDisplayFlag {
     HUD_DISPLAY_DEFAULT = HUD_DISPLAY_FLAG_LIVES | HUD_DISPLAY_FLAG_COIN_COUNT | HUD_DISPLAY_FLAG_STAR_COUNT | HUD_DISPLAY_FLAG_CAMERA_AND_POWER | HUD_DISPLAY_FLAG_KEYS | HUD_DISPLAY_FLAG_UNKNOWN_0020
 };
 
+void game_speed_update(void);
+void game_speed_increment(void);
+void game_speed_decrement(void);
+void game_speed_reset(void);
+u8 game_speed_is_altered(void);
+u16 game_speed_get_fixed_point(void);
+f32 game_speed_get_floating_point(void);
+u8 game_speed_frame_count(void);
 
 u16 level_control_timer(s32 timerOp);
 void fade_into_special_warp(u32 arg, u32 color);

@@ -97,7 +97,7 @@ u32 sDmaBufSize;
 s32 gMaxAudioCmds;
 s32 gMaxSimultaneousNotes;
 
-s16 gTempoInternalToExternal;
+f32 gTempoInternalToExternal;
 
 s8 gSoundMode;
 

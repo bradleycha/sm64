@@ -357,6 +357,22 @@ void render_hud_timer(void) {
 }
 
 /**
+ * Renders the current game speed.
+ */
+void render_game_speed(void) {
+    u16 speedMajor;
+    u16 speedMinor;
+
+    speedMajor = game_speed_get_fixed_point() / GAME_SPEED_MASK_FRAC;
+    speedMinor = ((game_speed_get_fixed_point() % GAME_SPEED_MASK_FRAC) * 100) / GAME_SPEED_CVT_DIV;
+
+    print_text(20, 22, "SPEED");
+    print_text_fmt_int(92, 22, "%d", speedMajor);
+    print_text_fmt_int(114, 22, "%02d", speedMinor);
+    print_text(140, 22, "*");
+}
+
+/**
  * Sets HUD status camera value depending of the actions
  * defined in update_camera_status.
  */
@@ -460,6 +476,10 @@ void render_hud(void) {
 
         if (hudDisplayFlags & HUD_DISPLAY_FLAG_TIMER) {
             render_hud_timer();
+        }
+
+        if (game_speed_is_altered()) {
+            render_game_speed();
         }
     }
 }
